@@ -330,78 +330,7 @@ CONTAINS
 
 
 
-  SUBROUTINE GET_LEFT_RIGHT_WAVEFUNCTION(Psi_1_noSO, nstate_1_noSO, ham_1_size, Psi_LR, nx, ny, norbs)
-    IMPLICIT NONE
-    INTEGER*4, INTENT(IN) :: nstate_1_noSO, ham_1_size, norbs, ny, nx
-    COMPLEX*16, INTENT(IN) :: Psi_1_noSO(ham_1_size, nstate_1_noSO)
-
-    COMPLEX*16, INTENT(OUT) :: Psi_LR(ham_1_size, nstate_1_noSO)
-    REAL*8 :: mask_L(ham_1_size), mask_R(ham_1_size)
-    INTEGER*4 :: i1, i, j, n
-
-    mask_L(:) = 0.0
-    mask_R(:) = 0.0
-    n = 0
-    DO j = -ny, ny
-      DO i = -nx, nx
-        IF (i < 0) THEN
-          mask_L(n*norbs+1:(n+1)*norbs) = 1.0
-          mask_R(n*norbs+1:(n+1)*norbs) = 0.0
-        ELSE
-          mask_L(n*norbs+1:(n+1)*norbs) = 0.0
-          mask_R(n*norbs+1:(n+1)*norbs) = 1.0
-        END IF
-        n = n + 1
-      END DO
-    END DO
-
-    DO i1 = 1, ham_1_size
-      Psi_LR(i1,1) = 1.0/SQRT(2.0) * (Psi_1_noSO(i1,3) - Psi_1_noSO(i1,1)) !* mask_L(i1)
-      Psi_LR(i1,2) = 1.0/SQRT(2.0) * (Psi_1_noSO(i1,4) + Psi_1_noSO(i1,2)) !* mask_R(i1)
-    END DO
-    
-  END SUBROUTINE
-
-    SUBROUTINE GET_LEFT_RIGHT_WAVEFUNCTION_PURE(Psi_1, nstate_1_noSO, ham_1_size, Psi_LR, nx, ny, norbs)
-    IMPLICIT NONE
-    INTEGER*4, INTENT(IN) :: nstate_1_noSO, ham_1_size, norbs, ny, nx
-    COMPLEX*16, INTENT(IN) :: Psi_1(ham_1_size, nstate_1)
-
-    COMPLEX*16, INTENT(OUT) :: Psi_LR(ham_1_size, nstate_1_noSO)
-    REAL*8 :: mask_L(ham_1_size), mask_R(ham_1_size)
-    REAl*8 :: normL, normR
-    INTEGER*4 :: i1, i, j, n
-
-    mask_L(:) = 0.0
-    mask_R(:) = 0.0
-    n = 0
-    DO j = -ny, ny
-      DO i = -nx, nx
-        IF (i < 0) THEN
-          mask_L(n*norbs+1:(n+1)*norbs) = 1.0
-          mask_R(n*norbs+1:(n+1)*norbs) = 0.0
-        ELSE
-          mask_L(n*norbs+1:(n+1)*norbs) = 0.0
-          mask_R(n*norbs+1:(n+1)*norbs) = 1.0
-        END IF
-        n = n + 1
-      END DO
-    END DO
-
-    DO i1 = 1, ham_1_size,norbs
-      Psi_LR(i1,1) = 1.0/SQRT(2.0) * (Psi_1(i1,3) + Psi_1(i1,1)) * mask_L(i1)
-      Psi_LR(i1+1,2) = 1.0/SQRT(2.0) * (Psi_1(i1,3) - Psi_1(i1,1)) * mask_R(i1)
-    END DO
-    normL = REAL(SUM(ABS(Psi_LR(:,1))**2))
-    normR = REAL(SUM(ABS(Psi_LR(:,2))**2))
-
-    Psi_LR(:,1) = Psi_LR(:,1)/SQRT(normL)
-    Psi_LR(:,2) = Psi_LR(:,2)/SQRT(normR)
-    ! PRINT*, "done" ! debug
-    PRINT*, REAL(SUM(ABS(Psi_LR(:,1))**2))
-    PRINT*, REAL(SUM(ABS(Psi_LR(:,2))**2))
-    
-  END SUBROUTINE
+  
 
   SUBROUTINE WAVEFUNCTION_CROSSSECTION(Psi_LR, ham_1_size,  nstate_1_noSO, x0, y0, Psi_cross)
     IMPLICIT NONE 
@@ -442,33 +371,7 @@ CONTAINS
 
   END SUBROUTINE
 
-  SUBROUTINE GET_INIT_COEFFICIENTS(Psi_LR, Psi_1, C_slater, ham_1_size, ham_2_size,  nstate_1_noSO, nstate_1, nstate_2, Combinations,k_electrons, Cm, Nx, Ny, norbitals)
-    IMPLICIT NONE 
-
-    COMPLEX*16, INTENT(IN) :: Psi_LR(ham_1_size, nstate_1_noSO), C_slater(ham_2_size, nstate_2), Psi_1(ham_1_size, nstate_1)
-    INTEGER*4, INTENT(IN) :: ham_1_size, nstate_1_noSO, ham_2_size, nstate_2, k_electrons, nstate_1
-    INTEGER*4, INTENT(IN) :: Combinations(ham_2_size, k_electrons)
-    INTEGER*4, INTENT(IN) :: Nx, Ny, norbitals
-    COMPLEX*16, INTENT(OUT) :: Cm(nstate_2)
-    COMPLEX*16 :: li, rj, lj, ri, coeff
-    INTEGER*4 :: i, j, im, k
-    Cm(:) = DCMPLX(0.0d0, 0.0d0)
-    DO im = 1, nstate_2
-      coeff = DCMPLX(0.0d0, 0.0d0)
-      DO k = 1, ham_2_size 
-        i = Combinations(k,1)
-        j = Combinations(k,2)
-
-        li = scalar_product(Psi_1(:,i), Psi_LR(:,1), ham_1_size)
-        lj = scalar_product(Psi_1(:,j), Psi_LR(:,1), ham_1_size)
-        ri = scalar_product(Psi_1(:,i), Psi_LR(:,2), ham_1_size)
-        rj = scalar_product(Psi_1(:,j), Psi_LR(:,2), ham_1_size)
-        coeff = coeff + CONJG(C_slater(k,im)) * (li * rj - lj * ri)
-      END DO
-      Cm(im) = coeff
-    END DO
-
-  END SUBROUTINE
+  
 
   ! SUBROUTINE TIME_EVOLUTION_SINGLE_SPIN_EXPECTATION(Psi_1, ham_1_size, nmax, Cm, nstates_1, nstates_2, t_max_int, dt, Energies_1, Spin_t,nx, ny, norbs)
   !   IMPLICIT NONE

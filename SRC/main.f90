@@ -9,6 +9,7 @@ PROGRAM MAIN
   USE constants
   USE utility
   USE logger
+  USE swap
 
   USE omp_lib
 
@@ -81,7 +82,6 @@ PROGRAM MAIN
   REAL*8 :: slater_norm
   CHARACTER(LEN=100) :: filename
   LOGICAL :: isSO
-  INTEGER :: nstate_1_noSO
 
   !OMP specific
   INTEGER*4 :: max_num_threads, used_threads
@@ -121,7 +121,7 @@ PROGRAM MAIN
     & 'V_0 = ', V0/eV2au
   LOG_INFO(log_string)
 
-  max_num_threads = 2 !omp_get_max_threads()
+  max_num_threads = 1 !omp_get_max_threads()
   CALL omp_set_num_threads(max_num_threads)
   WRITE(log_string, *) 'Number of threads: ', max_num_threads
   LOG_INFO(log_string)
@@ -143,7 +143,6 @@ PROGRAM MAIN
   LOG_INFO(log_string)
 
   slater_norm = SQRT(GAMMA(k_electrons + 1.0d0))
-  nstate_1_noSO = 8
   nmax = 6
   t_max_int = INT(t_max/dt)
   ! PRINT*, t_max_int
@@ -162,12 +161,12 @@ PROGRAM MAIN
   ALLOCATE (Particle_density_down(ham_1_size, nstate_2))
   ALLOCATE (Psi_1(ham_1_size, nstate_1))
   ALLOCATE (Psi_cross(ham_1_size, 1))
-  ALLOCATE (Psi_1_noSO(ham_1_size, nstate_1_noSO))
-  ALLOCATE (Psi_LR(ham_1_size, nstate_1_noSO))
+  ALLOCATE (Psi_1_noSO(ham_1_size, nstate_1))
+  ALLOCATE (Psi_LR(ham_1_size, 2))
   ALLOCATE (Psi_init(ham_1_size,2))
   ALLOCATE (Psi_density_init(ham_1_size))
   ALLOCATE (Energies_1(nstate_1))
-  ALLOCATE (Energies_1_noSO(nstate_1_noSO))
+  ALLOCATE (Energies_1_noSO(nstate_1))
   ALLOCATE (Nxm_single_elems(nstate_1, nstate_1))
   ALLOCATE (C_single_time(nstate_1))
   ALLOCATE (C_single_max_time(nstate_1))
@@ -185,7 +184,7 @@ PROGRAM MAIN
   ALLOCATE (N_ham_2_elems_in_prev_rows(ham_2_size))
   ALLOCATE (Nxm_elems(nstate_2, nstate_2))
   ALLOCATE (C_time(nstate_2))
-  ALLOCATE (Cm(nstate_1_noSO))
+  ALLOCATE (Cm(nstate_1))
   ALLOCATE (C_max_time(nstate_2))
   ALLOCATE (A_crank_nicolson(nstate_2, nstate_2))
   ALLOCATE (B_crank_nicolson(nstate_2, 1))
@@ -227,20 +226,15 @@ PROGRAM MAIN
   !#################### NO SPIN ORBIT ####################
   isSO = .FALSE.
 
-  
-  
   CALL CREATE_ONE_ELECTRON_HAMILTONIAN_CRS(Hamiltonian_1_crs, column_1_crs, row_1_crs, nonzero_ham_1, ham_1_size, Nx, Ny, norbs, potential, isSO)
+  CALL DIAGONALIZE_ARPACK_CRS(Hamiltonian_1_crs, column_1_crs, row_1_crs, nonzero_ham_1, ham_1_size, Psi_1_noSO, Energies_1_noSO, nstate_1)
+  CALL GET_LEFT_RIGHT_WAVEFUNCTION_PURE(Psi_1_noSO, nstate_1, ham_1_size, Psi_LR, nx, ny, norbs)
 
-  CALL DIAGONALIZE_ARPACK_CRS(Hamiltonian_1_crs, column_1_crs, row_1_crs, nonzero_ham_1, ham_1_size, Psi_1_noSO, Energies_1_noSO, nstate_1_noSO)
-
-  CALL GET_LEFT_RIGHT_WAVEFUNCTION_PURE(Psi_1_noSO, nstate_1_noSO, ham_1_size, Psi_LR, nx, ny, norbs)
-  !CALL WAVEFUNCTION_CROSSSECTION(Psi_LR, ham_1_size,  nstate_1_noSO, -15, 5, Psi_cross)
-  !CALL WRITE_SINGLE_ELECTRON_WAVEFUNCTIONS(Psi_cross, ham_1_size, 1, norbs, Nx, Ny, dx, './OutputData/Psi_INIT')
-  CALL WRITE_SINGLE_ELECTRON_WAVEFUNCTIONS(Psi_1_noSO, ham_1_size, nstate_1_noSO, norbs, Nx, Ny, dx, './OutputData/Psi_1_noSO')
-  CALL WRITE_SINGLE_ELECTRON_WAVEFUNCTIONS(Psi_LR, ham_1_size, nstate_1_noSO, norbs, Nx, Ny, dx, './OutputData/Psi_LR')
-  CALL WRITE_SINGLE_ELECTRON_EXPECTATIONS(Psi_LR, ham_1_size, nstate_1_noSO, norbs, './OutputData/Expectations_LR.dat')
-  CALL WRITE_SINGLE_ELECTRON_EXPECTATIONS(Psi_1_noSO, ham_1_size, nstate_1_noSO, norbs, './OutputData/Expectations_noSO_1.dat')
-  CALL WRITE_ENERGIES(Energies_1_noSO, nstate_1_noSO, './OutputData/Energies1_noSO.dat')
+  CALL WRITE_SINGLE_ELECTRON_WAVEFUNCTIONS(Psi_1_noSO, ham_1_size, nstate_1, norbs, Nx, Ny, dx, './OutputData/Psi_1_noSO')
+  CALL WRITE_SINGLE_ELECTRON_WAVEFUNCTIONS(Psi_LR, ham_1_size, 2, norbs, Nx, Ny, dx, './OutputData/Psi_LR')
+  CALL WRITE_SINGLE_ELECTRON_EXPECTATIONS(Psi_LR, ham_1_size, 2, norbs, './OutputData/Expectations_LR.dat')
+  CALL WRITE_SINGLE_ELECTRON_EXPECTATIONS(Psi_1_noSO, ham_1_size, nstate_1, norbs, './OutputData/Expectations_noSO_1.dat')
+  CALL WRITE_ENERGIES(Energies_1_noSO, nstate_1, './OutputData/Energies1_noSO.dat')
   !#################### WITH SPIN ORBIT ####################
   isSO = .TRUE.
   CALL CREATE_ONE_ELECTRON_HAMILTONIAN_CRS(Hamiltonian_1_crs, column_1_crs, row_1_crs, nonzero_ham_1, ham_1_size, Nx, Ny, norbs, potential, isSO)
@@ -326,7 +320,6 @@ PROGRAM MAIN
   !Writing single-electron problem data to a file
   CALL WRITE_SINGLE_ELECTRON_WAVEFUNCTIONS(Psi_1, ham_1_size, nstate_1, norbs, Nx, Ny, dx, './OutputData/Psi_1')
   CALL WRITE_SINGLE_ELECTRON_EXPECTATIONS(Psi_1, ham_1_size, nstate_1, norbs, './OutputData/Expectations_1.dat')
-  CALL WRITE_SINGLE_ELECTRON_EXPECTATIONS(Psi_LR, ham_1_size, nstate_1_noSO, norbs, './OutputData/Expectations_LR_1.dat')
   CALL WRITE_ENERGIES(Energies_1, nstate_1, './OutputData/Energies1.dat')
 
 
@@ -356,25 +349,11 @@ PROGRAM MAIN
   Energies_2(:) = 0.0d0
   CALL DIAGONALIZE_ARPACK_CRS(Hamiltonian_2_crs, column_2_crs, row_2_crs, nonzero_ham_2, ham_2_size, C_slater, Energies_2, nstate_2)
 
-  CALL CALCULATE_PARTICLE_DENSITY(Particle_density, Particle_density_up, Particle_density_down,Combinations, Psi_1, C_slater, N_changed_indeces,&
-  & Changed_indeces, ham_1_size, ham_2_size, nstate_1, nstate_2, k_electrons)
-  !CALL WRITE_SINGLE_ELECTRON_WAVEFUNCTIONS(DCMPLX(Particle_density, 0.0d0), ham_1_size, nstate_2, norbs, Nx, Ny, dx, './OutputData/Density')
-  !CALL WRITE_SINGLE_ELECTRON_WAVEFUNCTIONS(DCMPLX(Particle_density_up, 0.0d0), ham_1_size, nstate_2, norbs, Nx, Ny, dx, './OutputData/Density_up')
-  !CALL WRITE_SINGLE_ELECTRON_WAVEFUNCTIONS(DCMPLX(Particle_density_down, 0.0d0), ham_1_size, nstate_2, norbs, Nx, Ny, dx, './OutputData/Density_down')
-
-
-  !CALL CALCULATE_PARTICLE_DENSITY_new(Particle_density, Particle_density_up, Particle_density_down, Combinations, Psi_1, C_slater, ham_1_size, ham_2_size, nstate_1, nstate_2, k_electrons, Nx, Ny, norbs)
-  !CALL WRITE_MULTI_ELECTRON_DENSITY(DCMPLX(Particle_density, 0.0d0), ham_1_size, nstate_2, Nx, Ny, dx, './OutputData/Density')
-  !CALL WRITE_MULTI_ELECTRON_DENSITY(DCMPLX(Particle_density_up, 0.0d0), ham_1_size, nstate_2, Nx, Ny, dx, './OutputData/Density_up')
-  !CALL WRITE_MULTI_ELECTRON_DENSITY(DCMPLX(Particle_density_down, 0.0d0), ham_1_size, nstate_2, Nx, Ny, dx, './OutputData/Density_down')
-  !##########################################################
-  !CALL WRITE_STATE_MAP(DCMPLX(Particle_density, 0.0d0), ham_1_size, nstate_2, norbs, Nx, Ny, dx, './OutputData/Density')
-
   CALL WRITE_SLATER_COEFFICIENTS(C_slater, ham_2_size, nstate_2, './OutputData/C_slater.dat')
   CALL WRITE_MULTI_ELECTRON_EXPECTATIONS(Psi_1, C_slater, Combinations, N_changed_indeces, Changed_indeces, ham_1_size, ham_2_size, k_electrons, nstate_1, nstate_2, norbs, Nx, Ny, dx, './OutputData/Expectations_2.dat')
   CALL WRITE_ENERGIES(Energies_2, nstate_2, './OutputData/Energies2.dat')
 
-  CALL GET_INIT_COEFFICIENTS(Psi_LR, Psi_1, C_slater, ham_1_size, ham_2_size,  nstate_1_noSO, nstate_1, nstate_2, Combinations,k_electrons, Cm,Nx, Ny, norbs)
+  CALL GET_INIT_COEFFICIENTS(Psi_LR, Psi_1, C_slater, ham_1_size, ham_2_size,  nstate_1, nstate_1, nstate_2, Combinations,k_electrons, Cm)
   
   CALL TIME_EVOLUTION_SPIN_EXPECTATION(Psi_1, C_slater, Combinations, N_changed_indeces, Changed_indeces, ham_1_size, ham_2_size, nmax, k_electrons, Cm, nstate_1, nstate_2, t_max_int, dt, Energies_2, Spin_t,nx, ny, norbs)
   CALL WRITE_TIME_EVOLUTION(Spin_t, t_max_int, nmax, './OutputData/Spin_time_evolution.dat')

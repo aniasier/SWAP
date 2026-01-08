@@ -465,49 +465,7 @@ END SUBROUTINE CALCULATE_PARTICLE_DENSITY
 
   END SUBROUTINE CALCULATE_PARTICLE_DENSITY_new
 
-  SUBROUTINE TIME_EVOLUTION_SPIN_EXPECTATION(Psi_1, C_slater, Combinations, N_changed_indeces, Changed_indeces, ham_1_size, ham_2_size, nmax, k_electrons, Cm, nstates_1, nstates_2, t_max_int, dt, Energies_2, Spin_t,nx, ny, norbs)
-    IMPLICIT NONE
-
-    COMPLEX*16, INTENT(IN) :: Psi_1(ham_1_size, nstates_1)
-    COMPLEX*16, INTENT(IN) :: C_slater(ham_2_size, nstates_2), Cm(nstates_2)
-    INTEGER*4, INTENT(IN) :: Combinations(ham_2_size, k_electrons)
-    INTEGER*1, INTENT(IN) :: N_changed_indeces(ham_2_size, ham_2_size)
-    INTEGER*4, INTENT(IN) :: Changed_indeces(ham_2_size, ham_2_size, 2, 2)
-    INTEGER*4, INTENT(IN) :: ham_1_size, ham_2_size, k_electrons
-    INTEGER*4, INTENT(IN) :: nstates_1, nstates_2, nmax, t_max_int, nx, ny, norbs
-    REAL*8, INTENT(IN) :: Energies_2(nstates_2)
-    REAL*8, INTENT(IN) :: dt 
-    INTEGER*4 :: ti, n, m 
-    REAL*8 :: t
-    COMPLEX*16 :: Sz_L_tab(nstates_2, nstates_2), Sz_R_tab(nstates_2, nstates_2), Sx_L_tab(nstates_2, nstates_2), Sx_R_tab(nstates_2, nstates_2), Sy_L_tab(nstates_2, nstates_2), Sy_R_tab(nstates_2, nstates_2)
-
-    COMPLEX*16, INTENT(OUT) :: Spin_t(t_max_int, nmax)
-    Spin_t(:,:) = 0.0
-    DO n = 1, nstates_2
-      DO m = 1, nstates_2
-        Sx_L_tab(n,m) = CONJG(Cm(n)) * Cm(m) * (many_body_sigma_x_expected_value_L(Psi_1, C_slater, Combinations, N_changed_indeces, Changed_indeces,ham_1_size, ham_2_size, k_electrons, nstates_1, nstates_2, n, m, nx, ny, norbs))
-        Sx_R_tab(n,m) = CONJG(Cm(n)) * Cm(m) * (many_body_sigma_x_expected_value_R(Psi_1, C_slater, Combinations, N_changed_indeces, Changed_indeces,ham_1_size, ham_2_size, k_electrons, nstates_1, nstates_2, n, m, nx, ny, norbs))
-        Sy_L_tab(n,m) = CONJG(Cm(n)) * Cm(m) * (many_body_sigma_y_expected_value_L(Psi_1, C_slater, Combinations, N_changed_indeces, Changed_indeces,ham_1_size, ham_2_size, k_electrons, nstates_1, nstates_2, n, m, nx, ny, norbs))
-        Sy_R_tab(n,m) = CONJG(Cm(n)) * Cm(m) * (many_body_sigma_y_expected_value_R(Psi_1, C_slater, Combinations, N_changed_indeces, Changed_indeces,ham_1_size, ham_2_size, k_electrons, nstates_1, nstates_2, n, m, nx, ny, norbs))
-        Sz_L_tab(n,m) = CONJG(Cm(n)) * Cm(m) * (many_body_sigma_z_expected_value_L(Psi_1, C_slater, Combinations, N_changed_indeces, Changed_indeces,ham_1_size, ham_2_size, k_electrons, nstates_1, nstates_2, n, m, nx, ny, norbs))
-        Sz_R_tab(n,m) = CONJG(Cm(n)) * Cm(m) * (many_body_sigma_z_expected_value_R(Psi_1, C_slater, Combinations, N_changed_indeces, Changed_indeces,ham_1_size, ham_2_size, k_electrons, nstates_1, nstates_2, n, m, nx, ny, norbs))
-      END DO
-    END DO
-
-    DO ti = 1, t_max_int
-      t = (ti-1) * dt
-      DO n = 1, nstates_2
-        DO m = 1, nstates_2
-          Spin_t(ti, 1) = Spin_t(ti, 1) + Sx_L_tab(n,m) * EXP(-imag * (Energies_2(m) - Energies_2(n)) * t)
-          Spin_t(ti, 2) = Spin_t(ti, 2) + Sx_R_tab(n,m) * EXP(-imag * (Energies_2(m) - Energies_2(n)) * t)
-          Spin_t(ti, 3) = Spin_t(ti, 3) + Sy_L_tab(n,m) * EXP(-imag * (Energies_2(m) - Energies_2(n)) * t)
-          Spin_t(ti, 4) = Spin_t(ti, 4) + Sy_R_tab(n,m) * EXP(-imag * (Energies_2(m) - Energies_2(n)) * t)
-          Spin_t(ti, 5) = Spin_t(ti, 5) + Sz_L_tab(n,m) * EXP(-imag * (Energies_2(m) - Energies_2(n)) * t)
-          Spin_t(ti, 6) = Spin_t(ti, 6) + Sz_R_tab(n,m) * EXP(-imag * (Energies_2(m) - Energies_2(n)) * t)
-        END DO
-      END DO
-    END DO
-  END SUBROUTINE 
+  
 
 PURE RECURSIVE COMPLEX*16 FUNCTION many_body_x_expected_value(Psi_1, C_slater, Combinations, N_changed_indeces, Changed_indeces,ham_1_size, ham_2_size, k_electrons, nstates_1, nstates_2, n, m, Nx, dx, norbs)
     !! Calculates matrix element of <n|X|m>, where n and m denote multi-body wavefunctions and position operator x is defined as

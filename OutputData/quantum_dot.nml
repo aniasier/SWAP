@@ -3,11 +3,11 @@
 	Ny=40,
 	dx=.39,
 	norbs=6,
-	nstate_1 = 22,
-	nstate_2 = 20,
+	nstate_1 = 14,
+	nstate_2 = 12,
 	k_electrons = 2,
 	dt = 1e-3,
-	t_max = 0.01/
+	t_max = 1/
 
 &physical_parameters
 	th=0.04,
