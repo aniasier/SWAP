@@ -1,0 +1,9 @@
+*.dat
+*.o
+*.x
+*.i90
+*.png
+*.mod
+SRC/test/*.f90
+
+*.ipynb_checkpoints/
