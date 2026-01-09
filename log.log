@@ -1,14 +1,71 @@
  ==== START ====
-2026-1-8 14:54:20.209 TID = 0 INFO:  Calculation parameters: Nx =           80 Ny =           40 dx =   0.39000000000000001      norbs =            6 nstate_1 =           14 nstate_2 =           12 k_electrons =            2
-2026-1-8 14:54:20.209 TID = 0 INFO:  Physical parameters: th =    4.0000000000000001E-002 tl =   0.87500000000000000      td =    0.0000000000000000      dso =    0.0000000000000000      drso =    0.0000000000000000      dE =    4.7000000000000007E-002 g =    3.0000000000000000
-2026-1-8 14:54:20.209 TID = 0 INFO:  External parameters: omega =    1.8689000000000001E-002 Bx =    0.0000000000000000      By =    0.0000000000000000      Bz =    1.0000000000000000E-004 domega_ac =    1.0000000000000000E-002 omega_ac_max =    5.0000000000000003E-002 F =    999999.99999999988      V_b =    5.0000000000000003E-002 V_0 =    4.0000000000000001E-002
-2026-1-8 14:54:20.209 TID = 0 INFO:  Number of threads:            1
-2026-1-8 14:54:20.209 TID = 0 INFO:  ham_1_size =        78246 nonzero_ham_1 =       608579 ham_2_size =           91 nonzero_ham_2 =         4186
-2026-1-8 14:54:20.257 TID = 0 INFO:  ham_1_size =        78246 nonzero_ham_1 =       608579 ham_2_size =           91 nonzero_ham_2 =         4186
-2026-1-8 14:54:20.257 TID = 0 INFO:  Creating one-electron Hamiltonian
-2026-1-8 14:54:20.265 TID = 0 INFO:  Diagonalizing Hamiltonian
-2026-1-8 14:55:37.927 TID = 0 INFO:  Creating one-electron Hamiltonian
-2026-1-8 14:55:37.930 TID = 0 INFO:  Diagonalizing Hamiltonian
-2026-1-8 14:56:51.497 TID = 0 INFO:  n - 1 =         4186  nonzero_ham_2 =         4186
-2026-1-8 14:56:51.497 TID = 0 INFO:  Creating many-body Hamiltonian
-2026-1-8 14:56:51.580 TID = 0 INFO:  V_tilde i =            1
+2026-1-8 17:19:30.639 TID = 0 INFO:  Calculation parameters: Nx =           16 Ny =            8 dx =   0.39000000000000001      norbs =            6 nstate_1 =           10 nstate_2 =            8 k_electrons =            2
+2026-1-8 17:19:30.639 TID = 0 INFO:  Physical parameters: th =    4.0000000000000001E-002 tl =   0.87500000000000000      td =    0.0000000000000000      dso =    0.0000000000000000      drso =    0.0000000000000000      dE =    4.7000000000000007E-002 g =    3.0000000000000000
+2026-1-8 17:19:30.639 TID = 0 INFO:  External parameters: omega =    1.8689000000000001E-002 Bx =    0.0000000000000000      By =    0.0000000000000000      Bz =    1.0000000000000000E-004 domega_ac =    1.0000000000000000E-002 omega_ac_max =    5.0000000000000003E-002 F =    999999.99999999988      V_b =    5.0000000000000003E-002 V_0 =    4.0000000000000001E-002
+2026-1-8 17:19:30.640 TID = 0 INFO:  Number of threads:            1
+2026-1-8 17:19:30.640 TID = 0 INFO:  ham_1_size =         3366 nonzero_ham_1 =        25475 ham_2_size =           45 nonzero_ham_2 =         1035
+2026-1-8 17:19:30.641 TID = 0 INFO:  ham_1_size =         3366 nonzero_ham_1 =        25475 ham_2_size =           45 nonzero_ham_2 =         1035
+2026-1-8 17:19:30.641 TID = 0 INFO:  Creating one-electron Hamiltonian
+2026-1-8 17:19:30.641 TID = 0 INFO:  Diagonalizing Hamiltonian
+2026-1-8 17:19:31.591 TID = 0 INFO:  Creating one-electron Hamiltonian
+2026-1-8 17:19:31.591 TID = 0 INFO:  Diagonalizing Hamiltonian
+2026-1-8 17:19:32.289 TID = 0 INFO:  n - 1 =         1035  nonzero_ham_2 =         1035
+2026-1-8 17:19:32.289 TID = 0 INFO:  Creating many-body Hamiltonian
+2026-1-8 17:19:32.289 TID = 0 INFO:  V_tilde i =            1
+2026-1-8 17:19:32.868 TID = 0 INFO:  V_tilde i =            2
+2026-1-8 17:19:33.388 TID = 0 INFO:  V_tilde i =            3
+2026-1-8 17:19:33.854 TID = 0 INFO:  V_tilde i =            4
+2026-1-8 17:19:34.258 TID = 0 INFO:  V_tilde i =            5
+2026-1-8 17:19:34.604 TID = 0 INFO:  V_tilde i =            6
+2026-1-8 17:19:34.891 TID = 0 INFO:  V_tilde i =            7
+2026-1-8 17:19:35.122 TID = 0 INFO:  V_tilde i =            8
+2026-1-8 17:19:35.295 TID = 0 INFO:  V_tilde i =            9
+2026-1-8 17:19:35.410 TID = 0 INFO:  V_tilde i =           10
+2026-1-8 17:19:35.467 TID = 0 INFO:  Ham_2 i =            1
+2026-1-8 17:19:35.477 TID = 0 INFO:  Ham_2 i =            2
+2026-1-8 17:19:35.486 TID = 0 INFO:  Ham_2 i =            3
+2026-1-8 17:19:35.494 TID = 0 INFO:  Ham_2 i =            4
+2026-1-8 17:19:35.503 TID = 0 INFO:  Ham_2 i =            5
+2026-1-8 17:19:35.511 TID = 0 INFO:  Ham_2 i =            6
+2026-1-8 17:19:35.519 TID = 0 INFO:  Ham_2 i =            7
+2026-1-8 17:19:35.526 TID = 0 INFO:  Ham_2 i =            8
+2026-1-8 17:19:35.533 TID = 0 INFO:  Ham_2 i =            9
+2026-1-8 17:19:35.540 TID = 0 INFO:  Ham_2 i =           10
+2026-1-8 17:19:35.547 TID = 0 INFO:  Ham_2 i =           11
+2026-1-8 17:19:35.555 TID = 0 INFO:  Ham_2 i =           12
+2026-1-8 17:19:35.562 TID = 0 INFO:  Ham_2 i =           13
+2026-1-8 17:19:35.568 TID = 0 INFO:  Ham_2 i =           14
+2026-1-8 17:19:35.575 TID = 0 INFO:  Ham_2 i =           15
+2026-1-8 17:19:35.581 TID = 0 INFO:  Ham_2 i =           16
+2026-1-8 17:19:35.587 TID = 0 INFO:  Ham_2 i =           17
+2026-1-8 17:19:35.592 TID = 0 INFO:  Ham_2 i =           18
+2026-1-8 17:19:35.598 TID = 0 INFO:  Ham_2 i =           19
+2026-1-8 17:19:35.604 TID = 0 INFO:  Ham_2 i =           20
+2026-1-8 17:19:35.609 TID = 0 INFO:  Ham_2 i =           21
+2026-1-8 17:19:35.614 TID = 0 INFO:  Ham_2 i =           22
+2026-1-8 17:19:35.619 TID = 0 INFO:  Ham_2 i =           23
+2026-1-8 17:19:35.624 TID = 0 INFO:  Ham_2 i =           24
+2026-1-8 17:19:35.628 TID = 0 INFO:  Ham_2 i =           25
+2026-1-8 17:19:35.633 TID = 0 INFO:  Ham_2 i =           26
+2026-1-8 17:19:35.637 TID = 0 INFO:  Ham_2 i =           27
+2026-1-8 17:19:35.641 TID = 0 INFO:  Ham_2 i =           28
+2026-1-8 17:19:35.645 TID = 0 INFO:  Ham_2 i =           29
+2026-1-8 17:19:35.648 TID = 0 INFO:  Ham_2 i =           30
+2026-1-8 17:19:35.652 TID = 0 INFO:  Ham_2 i =           31
+2026-1-8 17:19:35.655 TID = 0 INFO:  Ham_2 i =           32
+2026-1-8 17:19:35.658 TID = 0 INFO:  Ham_2 i =           33
+2026-1-8 17:19:35.661 TID = 0 INFO:  Ham_2 i =           34
+2026-1-8 17:19:35.664 TID = 0 INFO:  Ham_2 i =           35
+2026-1-8 17:19:35.666 TID = 0 INFO:  Ham_2 i =           36
+2026-1-8 17:19:35.668 TID = 0 INFO:  Ham_2 i =           37
+2026-1-8 17:19:35.670 TID = 0 INFO:  Ham_2 i =           38
+2026-1-8 17:19:35.672 TID = 0 INFO:  Ham_2 i =           39
+2026-1-8 17:19:35.674 TID = 0 INFO:  Ham_2 i =           40
+2026-1-8 17:19:35.675 TID = 0 INFO:  Ham_2 i =           41
+2026-1-8 17:19:35.676 TID = 0 INFO:  Ham_2 i =           42
+2026-1-8 17:19:35.677 TID = 0 INFO:  Ham_2 i =           43
+2026-1-8 17:19:35.678 TID = 0 INFO:  Ham_2 i =           44
+2026-1-8 17:19:35.679 TID = 0 INFO:  Ham_2 i =           45
+2026-1-8 17:19:35.679 TID = 0 INFO:  Diagonalizing Hamiltonian
+ Time of simulation (seconds):    6.4068329999999998     
+ ==== END ====
