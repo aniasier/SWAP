@@ -96,7 +96,7 @@ def PlotEnergies1_Orbital(e1, exp1, name, output_folder="../Plots"):
         exp1['dyz_down'] + exp1['dyz_up']
     )).T
 
-
+    orbital_array = np.clip(orbital_array, 0, 1)
     energies = e1.iloc[:, 1].values
     fig, ax_main = plt.subplots(figsize=(8, 6))
 
@@ -123,6 +123,7 @@ def PlotEnergies2_Orbital(e2, exp2, name, output_folder="../Plots"):
         exp2['dyz_down'] + exp2['dyz_up']
     )).T
     orbital_array = orbital_array / 2
+    orbital_array = np.clip(orbital_array, 0, 1)
     energies = e2.iloc[:, 1].values
 
     plt.scatter(np.arange(len(energies)), energies, color=orbital_array, s=20)
@@ -133,36 +134,54 @@ def PlotEnergies2_Orbital(e2, exp2, name, output_folder="../Plots"):
     plt.savefig(os.path.join(output_folder, f"Energies2_dxdy_{name}.png"), format='png', dpi=300)
     plt.close()
 
-def PlotEnergies1_Spin(e1, exp1, name, output_folder="../Plots"):
+def PlotEnergies1_Spin(e1, exp1, name,xyz, output_folder="../Plots"):
 
     os.makedirs(output_folder, exist_ok=True)
 
-    sz_down = np.where(exp1['sz']>=-0.99)
-    sz_up = np.where(exp1['sz']<=-.99)
+
+    if(xyz==0):
+        sz_down = np.where(exp1['sx']<=-0.99)
+        sz_up = np.where(exp1['sx']>=.99)
+    elif(xyz==1):
+        sz_down = np.where(exp1['sy']<=-0.99)
+        sz_up = np.where(exp1['sy']>=.99)
+    elif(xyz==2):
+        sz_down = np.where(exp1['sz']<=-0.99)
+        sz_up = np.where(exp1['sz']>=.99)
 
     plt.scatter(sz_down[0], e1.iloc[sz_down[0], 1], color=c_google[1], label='down')
     plt.scatter(sz_up[0], e1.iloc[sz_up[0], 1], color=c_google[2],label='up')
     plt.xlabel('E [meV]')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(os.path.join(output_folder,f"Energies1_sz_{name}.png"), format='png', dpi=300)
+    plt.savefig(os.path.join(output_folder,f"Energies1_s{xyz}_{name}.png"), format='png', dpi=300)
     plt.close()
 
-def PlotEnergies2_Spin(e2, exp2, name, output_folder="../Plots"):
+def PlotEnergies2_Spin(e2, exp2, name,xyz, output_folder="../Plots"):
 
     os.makedirs(output_folder, exist_ok=True)
-
-    sz_down = np.where(exp2['sz']<=-1.99)
-    sz_up = np.where(exp2['sz']>=1.99)
     eps = 1e-10
-    sz_zero = np.where(np.abs(exp2['sz']) < eps)
+    if(xyz==0):
+        sz_down = np.where(exp2['sx']<=-1.99)
+        sz_up = np.where(exp2['sx']>=1.99)
+        sz_zero = np.where(np.abs(exp2['sx']) < eps)
+    elif(xyz==1):
+        sz_down = np.where(exp2['sy']<=-1.99)
+        sz_up = np.where(exp2['sy']>=1.99)
+        sz_zero = np.where(np.abs(exp2['sy']) < eps)
+    elif(xyz==2):
+        sz_down = np.where(exp2['sz']<=-1.99)
+        sz_up = np.where(exp2['sz']>=1.99)
+        sz_zero = np.where(np.abs(exp2['sz']) < eps)
+
+
     plt.scatter(sz_down[0], e2.iloc[sz_down[0], 1], color=c_google[1], label='-2')
     plt.scatter(sz_up[0], e2.iloc[sz_up[0], 1], color=c_google[2],label='+2')
     plt.scatter(sz_zero[0], e2.iloc[sz_zero[0], 1], color='gray',label='0')
     plt.xlabel('E [meV]')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(os.path.join(output_folder,f"Energies2_sz_{name}.png"), format='png', dpi=300)
+    plt.savefig(os.path.join(output_folder,f"Energies2_s{xyz}_{name}.png"), format='png', dpi=300)
     plt.close()
 
 def PlotSingleElectronPsi(psi1,n, name, output_folder="../Plots"):
@@ -223,28 +242,29 @@ def PlotPotential(potential, name, output_folder="../Plots"):
     plt.savefig(os.path.join(output_folder,f"potential_{name}.png"), format='png', dpi=300)
     plt.close()
 
-def PlotSpinTime(spin, name,xyz, output_folder="../Plots"):
+def PlotSpinTime(spin, name,x, y,z, output_folder="../Plots"):
     os.makedirs(output_folder, exist_ok=True)
 
-    if (xyz==0):
+    if (x ==1):
         plt.plot(spin.iloc[:,0], spin.iloc[:,1], label='$S_x$ (L)')
         plt.plot(spin.iloc[:,0], spin.iloc[:,2], label='$S_x$ (R)')
         spin_time = spin.iloc[:,2].values
-    elif(xyz==1):
+    if(y ==1):
         plt.plot(spin.iloc[:,0], spin.iloc[:,3], label='$S_y$ (L)')
         plt.plot(spin.iloc[:,0], spin.iloc[:,4], label='$S_y$ (R)')
         spin_time = spin.iloc[:,4].values
-    elif(xyz==2):
+    if(z == 1):
         plt.plot(spin.iloc[:,0], spin.iloc[:,5], label='$S_z$ (L)')
         plt.plot(spin.iloc[:,0], spin.iloc[:,6], label='$S_z$ (R)')
         spin_time = spin.iloc[:,6].values
+    xyz = x + y + z
     plt.ylim(-1,1)
     plt.xlim(spin.iloc[0,0],spin.iloc[-1,0])
     plt.xlabel('t [ns]')
     plt.ylabel('$<S>$ [$\hbar$/2]')
     plt.legend(loc='lower right')
     plt.tight_layout()
-    plt.savefig(os.path.join(output_folder,f"spin_swap_{name}.png"), format='png', dpi=300)
+    plt.savefig(os.path.join(output_folder,f"spin_swap{xyz}_{name}.png"), format='png', dpi=300)
     plt.close()
 
     peaks, _ = find_peaks(spin_time,prominence=0.1)
