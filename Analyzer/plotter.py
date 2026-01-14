@@ -13,6 +13,7 @@ from matplotlib.cm import get_cmap
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from scipy.signal import find_peaks
+from matplotlib.lines import Line2D
 
 ## Font
 #rcParams['font.family'] = 'Times New Roman'
@@ -113,6 +114,137 @@ def PlotEnergies1_Orbital(e1, exp1, name, output_folder="../Plots"):
     plt.savefig(os.path.join(output_folder, f"Energies1_dxdy_{name}.png"), dpi=300)
     plt.close()
 
+
+def PlotEnergies1_Spectrum(e1_list, exp1_list, dso, name, output_folder="../Plots"):
+    """
+    Scatter energii vs DSO.
+    e1_list – lista np.arrayów (po jednym na każdą wartość DSO)
+    dso     – np.array z wartościami DSO (tej samej długości co e1_list)
+    Kolory RGB zależne od orbitalów (dxy, dxz, dyz).
+    """
+
+    os.makedirs(output_folder, exist_ok=True)
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    for i, dso_val in enumerate(dso):
+
+        # --- energie ---
+        energies = e1_list[i]
+
+        # pandas DataFrame
+        if hasattr(energies, "iloc"):
+            energies = energies.iloc[:, 1].values
+
+        # numpy array
+        elif energies.ndim > 1:
+            energies = energies[:, 1]
+
+        # --- kolory orbitalne dla tego DSO ---
+        exp1 = exp1_list[i]
+        orbital_array = np.vstack((
+            exp1['dxy_down'] + exp1['dxy_up'],
+            exp1['dxz_down'] + exp1['dxz_up'],
+            exp1['dyz_down'] + exp1['dyz_up']
+        )).T
+
+        orbital_array = np.clip(orbital_array, 0, 1)
+
+        # --- oś X = stałe DSO ---
+        x = np.full(len(energies), dso_val)
+
+        ax.scatter(
+            x,
+            energies,
+            color=orbital_array,
+            s=20
+        )
+
+    ax.set_xlabel("DSO")
+    ax.set_ylabel("E [meV]")
+
+    # --- trójkąt Maxwella ---
+    inset_ax = fig.add_axes([0.82, 0.15, 0.08, 0.08])
+    fill_maxwell(inset_ax, corner_labels=('d$_{yz}$', 'd$_{xy}$', 'd$_{zx}$'))
+    ax.grid(True)
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_folder, f"Energies1_dxdy_DSO_{name}.png"), dpi=300)
+    plt.close()
+
+def PlotEnergies1_Spectrum_Spin(
+    e1_list, exp1_list, dso, name, xyz, output_folder="../Plots"
+):
+    """
+    Scatter energii vs DSO.
+    Kolorowanie ciągłe po spinach:
+    blue (-2) -> black (0) -> red (+2)
+    """
+
+    import os
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import LinearSegmentedColormap, Normalize
+
+    os.makedirs(output_folder, exist_ok=True)
+
+    # --- colormap spinowy ---
+    spin_cmap = LinearSegmentedColormap.from_list(
+        "spin_bkr",
+        ["blue", "black", "red"]
+    )
+    norm = Normalize(vmin=-2, vmax=2)
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    for i, dso_val in enumerate(dso):
+
+        # --- energie ---
+        energies = e1_list[i]
+        if hasattr(energies, "iloc"):
+            energies = energies.iloc[:, 1].values
+        elif energies.ndim > 1:
+            energies = energies[:, 1]
+
+        # --- spiny ---
+        exp1 = exp1_list[i]
+        if xyz == 0:
+            spin = exp1['sx']
+        elif xyz == 1:
+            spin = exp1['sy']
+        elif xyz == 2:
+            spin = exp1['sz']
+        else:
+            raise ValueError("xyz must be 0 (sx), 1 (sy) or 2 (sz)")
+
+        # --- oś X = DSO ---
+        x = np.full(len(energies), dso_val)
+
+        sc = ax.scatter(
+            x,
+            energies,
+            c=spin,
+            cmap=spin_cmap,
+            norm=norm,
+            s=20
+        )
+
+    ax.set_xlabel("DSO")
+    ax.set_ylabel("E [meV]")
+    ax.grid(True)
+
+    # --- colorbar ---
+    cbar = plt.colorbar(sc, ax=ax)
+    cbar.set_label(r"$\langle s_{%s} \rangle$" % ["x", "y", "z"][xyz])
+
+    plt.tight_layout()
+    plt.savefig(
+        os.path.join(output_folder, f"Energies1_spin_cont_s{xyz}_DSO_{name}.png"),
+        dpi=300
+    )
+    plt.close()
+
+
+
 def PlotEnergies2_Orbital(e2, exp2, name, output_folder="../Plots"):
 
     os.makedirs(output_folder, exist_ok=True)
@@ -126,10 +258,16 @@ def PlotEnergies2_Orbital(e2, exp2, name, output_folder="../Plots"):
     orbital_array = np.clip(orbital_array, 0, 1)
     energies = e2.iloc[:, 1].values
 
-    plt.scatter(np.arange(len(energies)), energies, color=orbital_array, s=20)
+    fig, ax_main = plt.subplots(figsize=(8, 6))
 
-    plt.xlabel('E [meV]')
-    plt.legend()
+    # Scatter główny
+    ax_main.scatter(np.arange(len(energies)), energies, color=orbital_array, s=20)
+    ax_main.set_xlabel('Index')
+    ax_main.set_ylabel('E [meV]')
+
+    # Mały trójkąt Maxwella w dolnym prawym rogu (2x mniejszy)
+    inset_ax = fig.add_axes([0.85, 0.15, 0.08, 0.08])  # left, bottom, width, height
+    fill_maxwell(inset_ax, corner_labels=('d$_{yz}$', 'd$_{xy}$', 'd$_{zx}$'))
     plt.tight_layout()
     plt.savefig(os.path.join(output_folder, f"Energies2_dxdy_{name}.png"), format='png', dpi=300)
     plt.close()
@@ -237,8 +375,8 @@ def PlotPotential(potential, name, output_folder="../Plots"):
     plt.colorbar(label="V [eV]")
     plt.axis('equal')
 
-    plt.xlabel(r"$k_x$")
-    plt.ylabel(r"$k_y$")
+    plt.xlabel(r"$x$")
+    plt.ylabel(r"$y$")
     plt.savefig(os.path.join(output_folder,f"potential_{name}.png"), format='png', dpi=300)
     plt.close()
 
@@ -277,3 +415,29 @@ def PlotSpinTime(spin, name,x, y,z, output_folder="../Plots"):
     print('Switching time: ', spin.iloc[:,0][first_peak])
 
 
+def FindTime(spin, name,x, y,z,):
+    if (x ==1):
+        spin_time = spin.iloc[:,2].values
+    if(y ==1):
+        spin_time = spin.iloc[:,4].values
+    if(z == 1):
+        spin_time = spin.iloc[:,6].values
+    peaks, _ = find_peaks(spin_time,prominence=0.1)
+    if len(peaks) == 0:
+        print("No peaks found")
+        return np.nan
+    # print(peaks)
+    first_peak = peaks[0]
+    # print(spin.iloc[:,0][first_peak])
+    return spin.iloc[:,0][first_peak]
+
+
+def PlotSwitchingTime(time, v0, output_folder="../Plots"):
+    plt.plot(v0, time,'.')
+    # plt.xlim(v0[0],v0[-1])
+    plt.xlabel('V$_0$ [eV]')
+    plt.ylabel('switching time')
+    plt.legend(loc='lower right')
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_folder,f"switching_time.png"), format='png', dpi=300)
+    plt.close()
