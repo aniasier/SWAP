@@ -330,16 +330,16 @@ def PlotEnergies2_Spin(e2, exp2, name,xyz, output_folder="../Plots"):
     os.makedirs(output_folder, exist_ok=True)
     eps = 1e-10
     if(xyz==0):
-        sz_down = np.where(exp2['sx']<=-1.99)
-        sz_up = np.where(exp2['sx']>=1.99)
+        sz_down = np.where(exp2['sx']<=-1.9)
+        sz_up = np.where(exp2['sx']>=1.9)
         sz_zero = np.where(np.abs(exp2['sx']) < eps)
     elif(xyz==1):
-        sz_down = np.where(exp2['sy']<=-1.99)
-        sz_up = np.where(exp2['sy']>=1.99)
+        sz_down = np.where(exp2['sy']<=-1.9)
+        sz_up = np.where(exp2['sy']>=1.9)
         sz_zero = np.where(np.abs(exp2['sy']) < eps)
     elif(xyz==2):
-        sz_down = np.where(exp2['sz']<=-1.99)
-        sz_up = np.where(exp2['sz']>=1.99)
+        sz_down = np.where(exp2['sz']<=-1.9)
+        sz_up = np.where(exp2['sz']>=1.9)
         sz_zero = np.where(np.abs(exp2['sz']) < eps)
 
 
@@ -350,6 +350,73 @@ def PlotEnergies2_Spin(e2, exp2, name,xyz, output_folder="../Plots"):
     plt.legend()
     plt.tight_layout()
     plt.savefig(os.path.join(output_folder,f"Energies2_s{xyz}_{name}.png"), format='png', dpi=300)
+    plt.close()
+
+def PlotEnergyGap_S_minus2_to_0(e_list, exp_list, dso, name, xyz=2, output_folder="../Plots"):
+    """
+    For each value in `dso`, find the first two states with spin approximately 
+    zero (|spin| < eps_zero), and plot their energy difference vs DSO.
+    """
+
+    os.makedirs(output_folder, exist_ok=True)
+
+    gaps = []
+    dso_vals = []
+    eps_zero = 1e-4
+    for i, d in enumerate(dso):
+        # extract energies similar to other functions
+        energies = e_list[i]
+        if hasattr(energies, "iloc"):
+            e_arr = energies.iloc[:, 1].values
+        elif getattr(energies, 'ndim', 1) > 1:
+            e_arr = energies[:, 1]
+        else:
+            e_arr = np.asarray(energies).ravel()
+
+        exp = exp_list[i]
+        if xyz == 0:
+            spin = np.asarray(exp['sx'])
+        elif xyz == 1:
+            spin = np.asarray(exp['sy'])
+        elif xyz == 2:
+            spin = np.asarray(exp['sz'])
+        else:
+            raise ValueError("xyz must be 0 (sx), 1 (sy) or 2 (sz)")
+
+        # find indices for spin ~ 0
+        idx_zero = np.where(np.abs(spin) < eps_zero)[0]
+
+        if idx_zero.size < 2:
+            # need at least 2 zero-spin states
+            gaps.append(np.nan)
+            dso_vals.append(d)
+            continue
+
+        # first two zero-spin energies
+        idx_1 = idx_zero[0]
+        idx_2 = idx_zero[1]
+        e_1 = e_arr[idx_1]
+        e_2 = e_arr[idx_2]
+
+        gap = np.abs(e_2 - e_1)
+        gaps.append(gap)
+        dso_vals.append(d)
+
+    # convert to arrays
+    dso_vals = np.array(dso_vals)
+    gaps = np.array(gaps)
+
+    # plot
+    fig, ax = plt.subplots(figsize=(6, 4))
+    ax.plot(dso_vals, gaps, linestyle='-')
+    # ax.set_yscale('log')
+    ax.set_xlabel('$V_0$ [eV]')
+    ax.set_ylabel(r'J [meV]')
+    ax.set_xlim(np.min(dso_vals), np.max(dso_vals))
+    ax.set_ylim(np.min(gaps), np.max(gaps))
+    # ax.grid(True)
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_folder, f"gap_zero_spin_s{xyz}_DSO_{name}.png"), dpi=300)
     plt.close()
 
 def PlotSingleElectronPsi(psi1,n, name, output_folder="../Plots"):
@@ -364,16 +431,23 @@ def PlotSingleElectronPsi(psi1,n, name, output_folder="../Plots"):
         re_down = psi1.iloc[:, 4 + i*4]
         im_down = psi1.iloc[:, 5 + i*4]
         density += re_up**2 + im_up**2 + re_down**2 + im_down**2
+    # rectangular figure with 2:1 width:height
+    fig, ax = plt.subplots(figsize=(8, 4))
 
-    plt.scatter(psi1["kx"], psi1["ky"], c=density, cmap="inferno", s=30)
-    plt.colorbar(label=r"$|\psi(k_x, k_y)|^2$")
-    plt.axis('equal')
+    sc = ax.scatter(psi1["kx"], psi1["ky"], c=density, cmap="inferno", s=30)
+    # fig.colorbar(sc, ax=ax, label=r"$|\psi(k_x, k_y)|^2$")
+    # set limits exactly to data bounds to avoid white margins
+    kx = psi1["kx"].values
+    ky = psi1["ky"].values
+    ax.set_xlim(np.min(kx), np.max(kx))
+    ax.set_ylim(np.min(ky), np.max(ky))
 
-    plt.xlabel(r"$k_x$")
-    plt.ylabel(r"$k_y$")
-    plt.tight_layout()
-    plt.savefig(os.path.join(output_folder,f"Psi_1_{n}_{name}.png"), format='png', dpi=300)
-    plt.close()
+    ax.set_aspect('equal', adjustable='box')
+    ax.set_xlabel(r"$x$ [nm]")
+    ax.set_ylabel(r"$y$ [nm]")
+    fig.tight_layout()
+    fig.savefig(os.path.join(output_folder, f"Psi_1_{n}_{name}.png"), format='png', dpi=300)
+    plt.close(fig)
 
 def PlotLRPsi(psi1,n, name, output_folder="../Plots"):
     os.makedirs(output_folder, exist_ok=True)
@@ -387,28 +461,76 @@ def PlotLRPsi(psi1,n, name, output_folder="../Plots"):
         re_down = psi1.iloc[:, 4 + i*4]
         im_down = psi1.iloc[:, 5 + i*4]
         density += re_up**2 + im_up**2 + re_down**2 + im_down**2
+    # rectangular figure with 2:1 width:height
+    fig, ax = plt.subplots(figsize=(7, 3.5))
 
-    plt.scatter(psi1["kx"], psi1["ky"], c=density, cmap="inferno", s=30)
-    plt.colorbar(label=r"$|\psi(k_x, k_y)|^2$")
-    plt.axis('equal')
+    sc = ax.scatter(psi1["kx"], psi1["ky"], c=density, cmap="inferno", s=30)
+    # fig.colorbar(sc, ax=ax, label=r"$|\psi(k_x, k_y)|^2$")
+    # set limits exactly to data bounds to avoid white margins
+    kx = psi1["kx"].values
+    ky = psi1["ky"].values
+    ax.set_xlim(np.min(kx), np.max(kx))
+    ax.set_ylim(np.min(ky), np.max(ky))
 
-    plt.xlabel(r"$k_x$")
-    plt.ylabel(r"$k_y$")
-    plt.tight_layout()
-    plt.savefig(os.path.join(output_folder,f"Psi_LR_{n}_{name}.png"), format='png', dpi=300)
-    plt.close()
+    ax.set_aspect('equal', adjustable='box')
+    ax.set_xlabel(r"$x$ [nm]")
+    ax.set_ylabel(r"$y$ [nm]")
+    fig.tight_layout()
+    fig.savefig(os.path.join(output_folder, f"Psi_LR_{n}_{name}.png"), format='png', dpi=300)
+    plt.close(fig)
 
 def PlotPotential(potential, name, output_folder="../Plots"):
     os.makedirs(output_folder, exist_ok=True)
-       
-    plt.scatter(potential["kx"], potential["ky"], c=potential["potential"], cmap="inferno", s=30)
-    plt.colorbar(label="V [eV]")
-    plt.axis('equal')
+    # Use a rectangular figure with 2:1 width:height ratio (keeps similar overall size)
+    fig, ax = plt.subplots(figsize=(8, 4))
 
-    plt.xlabel(r"$x$")
-    plt.ylabel(r"$y$")
-    plt.savefig(os.path.join(output_folder,f"potential_{name}.png"), format='png', dpi=300)
-    plt.close()
+    sc = ax.scatter(potential["kx"], potential["ky"], c=potential["potential"], cmap="inferno", s=30)
+    fig.colorbar(sc, ax=ax, label="V [eV]")
+
+    # set limits exactly to data bounds to avoid white margins
+    kx = np.asarray(potential["kx"])
+    ky = np.asarray(potential["ky"])
+    ax.set_xlim(np.min(kx), np.max(kx))
+    ax.set_ylim(np.min(ky), np.max(ky))
+
+    # keep data aspect equal but the figure itself is 2:1
+    ax.set_aspect("equal", adjustable="box")
+
+    ax.set_xlabel(r"$x$ [nm]")
+    ax.set_ylabel(r"$y$ [nm]")
+    fig.tight_layout()
+    fig.savefig(os.path.join(output_folder, f"potential_{name}.png"), format='png', dpi=300)
+    plt.close(fig)
+
+    # --- profile at ky == 0: plot V(kx) ---
+    try:
+        ky_arr = np.asarray(potential["ky"])
+        mask = np.isclose(ky_arr, 0.0, atol=1e-8)
+    except Exception:
+        mask = None
+
+    if mask is None or not np.any(mask):
+        # nothing exactly at ky==0 -- skip profile (user can adjust tolerance if needed)
+        print(f"PlotPotential: no entries with ky==0 for profile_potential_{name}; skipping profile plot")
+    else:
+        kx_profile = np.asarray(potential["kx"])[mask]
+        V_profile = np.asarray(potential["potential"])[mask]
+        # sort by kx
+        order = np.argsort(kx_profile)
+        kx_profile = kx_profile[order]
+        V_profile = V_profile[order]
+
+        fig2, ax2 = plt.subplots(figsize=(8, 4))
+        ax2.plot(kx_profile, V_profile, linestyle='-')
+        ax2.set_xlabel(r"$x$ [nm]")
+        ax2.set_ylabel('V [eV]')
+        ax2.set_xlim(np.min(kx_profile), np.max(kx_profile))
+        ax2.set_ylim(np.min(V_profile), np.max(V_profile))
+        ax2.grid(False)
+        fig2.tight_layout()
+        fig2.savefig(os.path.join(output_folder, f"profile_potential_{name}.png"), dpi=300)
+        plt.close(fig2)
+    
 
 def PlotSpinTime(spin, name,x, y,z, output_folder="../Plots"):
     os.makedirs(output_folder, exist_ok=True)
@@ -461,12 +583,33 @@ def FindTime(spin, name,x, y,z,):
     # print(spin.iloc[:,0][first_peak])
     return spin.iloc[:,0][first_peak]
 
+def PlotSpinDensity(potential, name, output_folder="../Plots"):
+    os.makedirs(output_folder, exist_ok=True)
+       
+    plt.scatter(potential["kx"], potential["ky"], c=potential["potential"], cmap="seismic", s=30)
+    plt.colorbar(label="Spin Density [$\hbar$/2]")
+    plt.axis('equal')
+
+    plt.xlabel(r"$x$ [nm]")
+    plt.ylabel(r"$y$ [nm]")
+    plt.savefig(os.path.join(output_folder,f"spin_density_tswitch_{name}.png"), format='png', dpi=300)
+    plt.close()
 
 def PlotSwitchingTime(time, v0, output_folder="../Plots"):
     plt.plot(v0, time,'.')
     # plt.xlim(v0[0],v0[-1])
     plt.xlabel('V$_0$ [eV]')
-    plt.ylabel('switching time')
+    plt.ylabel('switching time [ns]')
+    plt.legend(loc='lower right')
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_folder,f"switching_time.png"), format='png', dpi=300)
+    plt.close()
+
+def PlotExchangeEnergy(e2, v0, output_folder="../Plots"):
+    plt.plot(v0, time,'.')
+    # plt.xlim(v0[0],v0[-1])
+    plt.xlabel('V$_0$ [eV]')
+    plt.ylabel('switching time [ns]')
     plt.legend(loc='lower right')
     plt.tight_layout()
     plt.savefig(os.path.join(output_folder,f"switching_time.png"), format='png', dpi=300)

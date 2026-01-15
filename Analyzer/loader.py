@@ -166,6 +166,26 @@ def LoadPotential(dir):
         
     return psi1
 
+
+def LoadSpinDensity(dir):
+    psiPath = os.path.join(
+        dir + "OutputData", f"spin_densitytswitch.dat"
+    )
+    if os.path.exists(psiPath):
+        psi1 = pd.read_fwf(
+            psiPath,
+            skiprows=1,
+            infer_nrows=100,
+            names=[
+                "kx",
+                "ky",
+                "potential",
+            ],
+        )
+    else:
+        print("File does not exists, skipping: ", psiPath)
+        
+    return psi1
 def LoadSpinTime(filename,dir):
     psiPath = os.path.join(
         dir + "OutputData/" + "Spin_time_evolution.dat"

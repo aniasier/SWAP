@@ -71,7 +71,7 @@ MODULE swap
   SUBROUTINE GET_INIT_COEFFICIENTS(Psi_LR, Psi_1, C_slater, ham_1_size, ham_2_size,  nstate_1_noSO, nstate_1, nstate_2, Combinations,k_electrons, Cm)
     IMPLICIT NONE 
 
-    COMPLEX*16, INTENT(IN) :: Psi_LR(ham_1_size, nstate_1_noSO), C_slater(ham_2_size, nstate_2), Psi_1(ham_1_size, nstate_1)
+    COMPLEX*16, INTENT(IN) :: Psi_LR(ham_1_size, 2), C_slater(ham_2_size, nstate_2), Psi_1(ham_1_size, nstate_1)
     INTEGER*4, INTENT(IN) :: ham_1_size, nstate_1_noSO, ham_2_size, nstate_2, k_electrons, nstate_1
     INTEGER*4, INTENT(IN) :: Combinations(ham_2_size, k_electrons)
     COMPLEX*16, INTENT(OUT) :: Cm(nstate_2)
