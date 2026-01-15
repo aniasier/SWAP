@@ -190,52 +190,82 @@ def PlotEnergies1_Spectrum_Spin(
     # --- colormap spinowy ---
     spin_cmap = LinearSegmentedColormap.from_list(
         "spin_bkr",
-        ["blue", "black", "red"]
+        ["tab:blue", "black", "tab:red"]
     )
     norm = Normalize(vmin=-2, vmax=2)
 
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=(4, 6))
 
-    for i, dso_val in enumerate(dso):
+    # --- collect energies and spins into matrices (shape: n_dso x n_levels)
+    n_dso = len(dso)
+    # determine number of levels from first entry
+    first_energies = e1_list[0]
+    if hasattr(first_energies, "iloc"):
+        first_arr = first_energies.iloc[:, 1].values
+    elif getattr(first_energies, 'ndim', 1) > 1:
+        first_arr = first_energies[:, 1]
+    else:
+        first_arr = np.asarray(first_energies).ravel()
 
-        # --- energie ---
+    n_levels = len(first_arr)
+
+    energies_mat = np.zeros((n_dso, n_levels))
+    spins_mat = np.zeros((n_dso, n_levels))
+
+    for i in range(n_dso):
         energies = e1_list[i]
         if hasattr(energies, "iloc"):
             energies = energies.iloc[:, 1].values
-        elif energies.ndim > 1:
+        elif getattr(energies, 'ndim', 1) > 1:
             energies = energies[:, 1]
+        energies_mat[i, :] = energies
 
-        # --- spiny ---
         exp1 = exp1_list[i]
         if xyz == 0:
-            spin = exp1['sx']
+            spin = np.asarray(exp1['sx'])
         elif xyz == 1:
-            spin = exp1['sy']
+            spin = np.asarray(exp1['sy'])
         elif xyz == 2:
-            spin = exp1['sz']
+            spin = np.asarray(exp1['sz'])
         else:
             raise ValueError("xyz must be 0 (sx), 1 (sy) or 2 (sz)")
+        spins_mat[i, :] = spin
 
-        # --- oś X = DSO ---
-        x = np.full(len(energies), dso_val)
+    from matplotlib.collections import LineCollection
 
-        sc = ax.scatter(
-            x,
-            energies,
-            c=spin,
-            cmap=spin_cmap,
-            norm=norm,
-            s=20
-        )
+    x = np.array(dso)
 
-    ax.set_xlabel("DSO")
+    if n_dso < 2:
+        # nothing to connect: fallback to single scatter
+        for lvl in range(n_levels):
+            ax.scatter(x, energies_mat[:, lvl], c=spins_mat[:, lvl], cmap=spin_cmap, norm=norm, s=20)
+        sc_for_cb = None
+    else:
+        sc_for_cb = None
+        # for each energy level (index), draw a LineCollection whose segments
+        # are colored according to the spin values along DSO
+        for lvl in range(n_levels):
+            y = energies_mat[:, lvl]
+            spin_vals = spins_mat[:, lvl]
+            points = np.column_stack([x, y])
+            segments = np.stack([points[:-1], points[1:]], axis=1)
+            lc = LineCollection(segments, cmap=spin_cmap, norm=norm, linewidths=0.9)
+            # color segments by spin at the left endpoint of each segment
+            lc.set_array(spin_vals[:-1])
+            ax.add_collection(lc)
+            sc_for_cb = lc
+
+    ax.set_xlabel("B [T]")
     ax.set_ylabel("E [meV]")
-    ax.grid(True)
+    # ax.grid(True)
 
     # --- colorbar ---
-    cbar = plt.colorbar(sc, ax=ax)
-    cbar.set_label(r"$\langle s_{%s} \rangle$" % ["x", "y", "z"][xyz])
+    if sc_for_cb is not None:
+        cbar = plt.colorbar(sc_for_cb, ax=ax)
+        cbar.set_label(r"$\langle s_{%s} \rangle$" % ["x", "y", "z"][xyz])
 
+    ax.set_xlim(np.min(x), np.max(x))
+    ax.autoscale_view()
     plt.tight_layout()
     plt.savefig(
         os.path.join(output_folder, f"Energies1_spin_cont_s{xyz}_DSO_{name}.png"),
