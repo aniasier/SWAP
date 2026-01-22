@@ -16,19 +16,28 @@ from scipy.signal import find_peaks
 from matplotlib.lines import Line2D
 
 ## Font
-#rcParams['font.family'] = 'Times New Roman'
-rcParams['font.family']= 'serif'
-rcParams['font.serif']= ['Times New Roman', 'Times', 'DejaVu Serif']
-rcParams['font.size'] = 14
+rcParams['font.family'] = 'serif'
+rcParams['font.serif'] = ['Times New Roman', 'Times', 'DejaVu Serif']
+rcParams['font.size'] = 9
+
+rcParams['axes.labelsize'] = 9
+rcParams['axes.titlesize'] = 9
+rcParams['legend.fontsize'] = 8
+rcParams['xtick.labelsize'] = 8
+rcParams['ytick.labelsize'] = 8
 
 ## Lines
-rcParams['lines.solid_joinstyle'] = 'miter'  # other options: 'round' or 'bevel'
-rcParams['lines.antialiased'] = True  # turning on/off of antialiasing for sharper edges
-rcParams['lines.linewidth'] = 1.25
+rcParams['lines.linewidth'] = 1.1
+rcParams['lines.solid_joinstyle'] = 'miter'
+rcParams['lines.antialiased'] = True
+rcParams['lines.markersize'] = 4
+
+## Axes
+rcParams['axes.linewidth'] = 0.8
 
 ## Legend
-rcParams['legend.loc'] = 'upper left'
 rcParams['legend.frameon'] = False
+rcParams['legend.loc'] = 'best'
 
 ## Ticks
 rcParams['xtick.direction'] = 'in'
@@ -36,21 +45,32 @@ rcParams['ytick.direction'] = 'in'
 rcParams['xtick.top'] = True
 rcParams['ytick.right'] = True
 
+rcParams['xtick.major.size'] = 4
+rcParams['ytick.major.size'] = 4
+rcParams['xtick.minor.size'] = 2
+rcParams['ytick.minor.size'] = 2
+
+rcParams['xtick.major.width'] = 0.8
+rcParams['ytick.major.width'] = 0.8
+rcParams['xtick.minor.width'] = 0.6
+rcParams['ytick.minor.width'] = 0.6
+
 rcParams['xtick.minor.visible'] = True
 rcParams['ytick.minor.visible'] = True
 
-## Resolution
-rcParams['figure.dpi'] = 150
+## Figure
+rcParams['figure.figsize'] = (3.35, 2.5)
+rcParams['figure.dpi'] = 300
+rcParams['savefig.dpi'] = 300
 
-## Colors
-### cmaps
+## Colormaps
 cm_inferno = get_cmap("inferno")
 cm_viridis = get_cmap("viridis")
 cm_seismic = get_cmap("seismic")
-cm_jet = get_cmap("jet")
 cm_tab10 = get_cmap("tab10")
-### Palettes from color-hex.com/
-c_google = ['#008744', '#0057e7', '#d62d20', '#ffa700'] # G, B, R, Y # https://www.color-hex.com/color-palette/1872
+
+### Palettes from color-hex.com/ 
+c_google = ['#008744', '#0057e7', '#d62d20', '#ffa700'] # G, B, R, Y # https://www.color-hex.com/color-palette/1872 
 c_twilight = ['#363b74', '#673888', '#ef4f91', '#c79dd7', '#4d1b7b'] # https://www.color-hex.com/color-palette/809
 
 import numpy as np
@@ -79,9 +99,9 @@ def fill_maxwell(ax, corner_labels=('B', 'G', 'R')):
     ax.imshow(img, origin='lower', extent=[-a, a, 0.0, 1.0])
     ax.axis('off')
 
-    pozycje = [(-a-0.3, 0), (a+0.3, 0), (0, 1+0.15)]
+    pozycje = [(-a-0.4, 0), (a+0.4, 0), (0, 1+0.25)]
     for (x, y), label in zip(pozycje, corner_labels):
-        ax.text(x, y, label, ha='center', va='center', fontsize=10, color='black')
+        ax.text(x, y, label, ha='center', va='center', fontsize=8, color='black')
 
 
 def PlotEnergies1_Orbital(e1, exp1, name, output_folder="../Plots"):
@@ -99,7 +119,7 @@ def PlotEnergies1_Orbital(e1, exp1, name, output_folder="../Plots"):
 
     orbital_array = np.clip(orbital_array, 0, 1)
     energies = e1.iloc[:, 1].values
-    fig, ax_main = plt.subplots(figsize=(8, 6))
+    fig, ax_main = plt.subplots()
 
     # Scatter główny
     ax_main.scatter(np.arange(len(energies)), energies, color=orbital_array, s=20)
@@ -107,11 +127,11 @@ def PlotEnergies1_Orbital(e1, exp1, name, output_folder="../Plots"):
     ax_main.set_ylabel('E [meV]')
 
     # Mały trójkąt Maxwella w dolnym prawym rogu (2x mniejszy)
-    inset_ax = fig.add_axes([0.85, 0.15, 0.08, 0.08])  # left, bottom, width, height
+    inset_ax = fig.add_axes([0.82, 0.25, 0.08, 0.08])  # left, bottom, width, height
     fill_maxwell(inset_ax, corner_labels=('d$_{yz}$', 'd$_{xy}$', 'd$_{zx}$'))
 
     plt.tight_layout()
-    plt.savefig(os.path.join(output_folder, f"Energies1_dxdy_{name}.png"), dpi=300)
+    plt.savefig(os.path.join(output_folder, f"Energies1_dxdy_{name}.png"))
     plt.close()
 
 
@@ -125,7 +145,7 @@ def PlotEnergies1_Spectrum(e1_list, exp1_list, dso, name, output_folder="../Plot
 
     os.makedirs(output_folder, exist_ok=True)
 
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots()
 
     for i, dso_val in enumerate(dso):
 
@@ -168,7 +188,7 @@ def PlotEnergies1_Spectrum(e1_list, exp1_list, dso, name, output_folder="../Plot
     fill_maxwell(inset_ax, corner_labels=('d$_{yz}$', 'd$_{xy}$', 'd$_{zx}$'))
     ax.grid(True)
     plt.tight_layout()
-    plt.savefig(os.path.join(output_folder, f"Energies1_dxdy_DSO_{name}.png"), dpi=300)
+    plt.savefig(os.path.join(output_folder, f"Energies1_dxdy_DSO_{name}.png"))
     plt.close()
 
 def PlotEnergies1_Spectrum_Spin(
@@ -194,7 +214,7 @@ def PlotEnergies1_Spectrum_Spin(
     )
     norm = Normalize(vmin=-2, vmax=2)
 
-    fig, ax = plt.subplots(figsize=(4, 6))
+    fig, ax = plt.subplots()
 
     # --- collect energies and spins into matrices (shape: n_dso x n_levels)
     n_dso = len(dso)
@@ -268,8 +288,7 @@ def PlotEnergies1_Spectrum_Spin(
     ax.autoscale_view()
     plt.tight_layout()
     plt.savefig(
-        os.path.join(output_folder, f"Energies1_spin_cont_s{xyz}_DSO_{name}.png"),
-        dpi=300
+        os.path.join(output_folder, f"Energies1_spin_cont_s{xyz}_DSO_{name}.png")
     )
     plt.close()
 
@@ -288,7 +307,7 @@ def PlotEnergies2_Orbital(e2, exp2, name, output_folder="../Plots"):
     orbital_array = np.clip(orbital_array, 0, 1)
     energies = e2.iloc[:, 1].values
 
-    fig, ax_main = plt.subplots(figsize=(8, 6))
+    fig, ax_main = plt.subplots()
 
     # Scatter główny
     ax_main.scatter(np.arange(len(energies)), energies, color=orbital_array, s=20)
@@ -296,10 +315,10 @@ def PlotEnergies2_Orbital(e2, exp2, name, output_folder="../Plots"):
     ax_main.set_ylabel('E [meV]')
 
     # Mały trójkąt Maxwella w dolnym prawym rogu (2x mniejszy)
-    inset_ax = fig.add_axes([0.85, 0.15, 0.08, 0.08])  # left, bottom, width, height
+    inset_ax = fig.add_axes([0.82, 0.25, 0.08, 0.08])  # left, bottom, width, height
     fill_maxwell(inset_ax, corner_labels=('d$_{yz}$', 'd$_{xy}$', 'd$_{zx}$'))
     plt.tight_layout()
-    plt.savefig(os.path.join(output_folder, f"Energies2_dxdy_{name}.png"), format='png', dpi=300)
+    plt.savefig(os.path.join(output_folder, f"Energies2_dxdy_{name}.png"), format='png')
     plt.close()
 
 def PlotEnergies1_Spin(e1, exp1, name,xyz, output_folder="../Plots"):
@@ -322,7 +341,7 @@ def PlotEnergies1_Spin(e1, exp1, name,xyz, output_folder="../Plots"):
     plt.xlabel('E [meV]')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(os.path.join(output_folder,f"Energies1_s{xyz}_{name}.png"), format='png', dpi=300)
+    plt.savefig(os.path.join(output_folder,f"Energies1_s{xyz}_{name}.png"), format='png')
     plt.close()
 
 def PlotEnergies2_Spin(e2, exp2, name,xyz, output_folder="../Plots"):
@@ -349,7 +368,7 @@ def PlotEnergies2_Spin(e2, exp2, name,xyz, output_folder="../Plots"):
     plt.xlabel('E [meV]')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(os.path.join(output_folder,f"Energies2_s{xyz}_{name}.png"), format='png', dpi=300)
+    plt.savefig(os.path.join(output_folder,f"Energies2_s{xyz}_{name}.png"), format='png')
     plt.close()
 
 def PlotEnergyGap_S_minus2_to_0(e_list, exp_list, dso, name, xyz=2, output_folder="../Plots"):
@@ -407,7 +426,7 @@ def PlotEnergyGap_S_minus2_to_0(e_list, exp_list, dso, name, xyz=2, output_folde
     gaps = np.array(gaps)
 
     # plot
-    fig, ax = plt.subplots(figsize=(6, 4))
+    fig, ax = plt.subplots()
     ax.plot(dso_vals, gaps, linestyle='-')
     # ax.set_yscale('log')
     ax.set_xlabel('$V_0$ [eV]')
@@ -416,7 +435,7 @@ def PlotEnergyGap_S_minus2_to_0(e_list, exp_list, dso, name, xyz=2, output_folde
     ax.set_ylim(np.min(gaps), np.max(gaps))
     # ax.grid(True)
     plt.tight_layout()
-    plt.savefig(os.path.join(output_folder, f"gap_zero_spin_s{xyz}_DSO_{name}.png"), dpi=300)
+    plt.savefig(os.path.join(output_folder, f"gap_zero_spin_s{xyz}_DSO_{name}.png"))
     plt.close()
 
 def PlotSingleElectronPsi(psi1,n, name, output_folder="../Plots"):
@@ -432,7 +451,7 @@ def PlotSingleElectronPsi(psi1,n, name, output_folder="../Plots"):
         im_down = psi1.iloc[:, 5 + i*4]
         density += re_up**2 + im_up**2 + re_down**2 + im_down**2
     # rectangular figure with 2:1 width:height
-    fig, ax = plt.subplots(figsize=(8, 4))
+    fig, ax = plt.subplots()
 
     sc = ax.scatter(psi1["kx"], psi1["ky"], c=density, cmap="inferno", s=30)
     # fig.colorbar(sc, ax=ax, label=r"$|\psi(k_x, k_y)|^2$")
@@ -446,7 +465,7 @@ def PlotSingleElectronPsi(psi1,n, name, output_folder="../Plots"):
     ax.set_xlabel(r"$x$ [nm]")
     ax.set_ylabel(r"$y$ [nm]")
     fig.tight_layout()
-    fig.savefig(os.path.join(output_folder, f"Psi_1_{n}_{name}.png"), format='png', dpi=300)
+    fig.savefig(os.path.join(output_folder, f"Psi_1_{n}_{name}.png"), format='png')
     plt.close(fig)
 
 def PlotLRPsi(psi1,n, name, output_folder="../Plots"):
@@ -462,7 +481,7 @@ def PlotLRPsi(psi1,n, name, output_folder="../Plots"):
         im_down = psi1.iloc[:, 5 + i*4]
         density += re_up**2 + im_up**2 + re_down**2 + im_down**2
     # rectangular figure with 2:1 width:height
-    fig, ax = plt.subplots(figsize=(7, 3.5))
+    fig, ax = plt.subplots()
 
     sc = ax.scatter(psi1["kx"], psi1["ky"], c=density, cmap="inferno", s=30)
     # fig.colorbar(sc, ax=ax, label=r"$|\psi(k_x, k_y)|^2$")
@@ -476,13 +495,13 @@ def PlotLRPsi(psi1,n, name, output_folder="../Plots"):
     ax.set_xlabel(r"$x$ [nm]")
     ax.set_ylabel(r"$y$ [nm]")
     fig.tight_layout()
-    fig.savefig(os.path.join(output_folder, f"Psi_LR_{n}_{name}.png"), format='png', dpi=300)
+    fig.savefig(os.path.join(output_folder, f"Psi_LR_{n}_{name}.png"), format='png')
     plt.close(fig)
 
 def PlotPotential(potential, name, output_folder="../Plots"):
     os.makedirs(output_folder, exist_ok=True)
     # Use a rectangular figure with 2:1 width:height ratio (keeps similar overall size)
-    fig, ax = plt.subplots(figsize=(8, 4))
+    fig, ax = plt.subplots()
 
     sc = ax.scatter(potential["kx"], potential["ky"], c=potential["potential"], cmap="inferno", s=30)
     fig.colorbar(sc, ax=ax, label="V [eV]")
@@ -499,7 +518,7 @@ def PlotPotential(potential, name, output_folder="../Plots"):
     ax.set_xlabel(r"$x$ [nm]")
     ax.set_ylabel(r"$y$ [nm]")
     fig.tight_layout()
-    fig.savefig(os.path.join(output_folder, f"potential_{name}.png"), format='png', dpi=300)
+    fig.savefig(os.path.join(output_folder, f"potential_{name}.png"), format='png')
     plt.close(fig)
 
     # --- profile at ky == 0: plot V(kx) ---
@@ -528,7 +547,7 @@ def PlotPotential(potential, name, output_folder="../Plots"):
         ax2.set_ylim(np.min(V_profile), np.max(V_profile))
         ax2.grid(False)
         fig2.tight_layout()
-        fig2.savefig(os.path.join(output_folder, f"profile_potential_{name}.png"), dpi=300)
+        fig2.savefig(os.path.join(output_folder, f"profile_potential_{name}.png"))
         plt.close(fig2)
     
 
@@ -549,12 +568,13 @@ def PlotSpinTime(spin, name,x, y,z, output_folder="../Plots"):
         spin_time = spin.iloc[:,6].values
     xyz = x + y + z
     plt.ylim(-1,1)
-    plt.xlim(spin.iloc[0,0],spin.iloc[-1,0])
+    plt.xlim(spin.iloc[0,0], spin.iloc[-1,0])
+    # plt.xlim(spin.iloc[0,0], 0.001)
     plt.xlabel('t [ns]')
-    plt.ylabel('$<S>$ [$\hbar$/2]')
-    plt.legend(loc='lower right')
+    plt.ylabel('$S$ [$\hbar$/2]')
+    plt.legend()
     plt.tight_layout()
-    plt.savefig(os.path.join(output_folder,f"spin_swap{xyz}_{name}.png"), format='png', dpi=300)
+    plt.savefig(os.path.join(output_folder,f"spin_swap_small_full_{name}.png"), format='png')
     plt.close()
 
     peaks, _ = find_peaks(spin_time,prominence=0.1)
@@ -592,7 +612,7 @@ def PlotSpinDensity(potential, name, output_folder="../Plots"):
 
     plt.xlabel(r"$x$ [nm]")
     plt.ylabel(r"$y$ [nm]")
-    plt.savefig(os.path.join(output_folder,f"spin_density_tswitch_{name}.png"), format='png', dpi=300)
+    plt.savefig(os.path.join(output_folder,f"spin_density_tswitch_{name}.png"), format='png')
     plt.close()
 
 def PlotSwitchingTime(time, v0, output_folder="../Plots"):
@@ -600,9 +620,9 @@ def PlotSwitchingTime(time, v0, output_folder="../Plots"):
     # plt.xlim(v0[0],v0[-1])
     plt.xlabel('V$_0$ [eV]')
     plt.ylabel('switching time [ns]')
-    plt.legend(loc='lower right')
+    plt.legend()
     plt.tight_layout()
-    plt.savefig(os.path.join(output_folder,f"switching_time.png"), format='png', dpi=300)
+    plt.savefig(os.path.join(output_folder,f"switching_time.png"), format='png')
     plt.close()
 
 def PlotExchangeEnergy(e2, v0, output_folder="../Plots"):
@@ -610,7 +630,7 @@ def PlotExchangeEnergy(e2, v0, output_folder="../Plots"):
     # plt.xlim(v0[0],v0[-1])
     plt.xlabel('V$_0$ [eV]')
     plt.ylabel('switching time [ns]')
-    plt.legend(loc='lower right')
+    plt.legend()
     plt.tight_layout()
-    plt.savefig(os.path.join(output_folder,f"switching_time.png"), format='png', dpi=300)
+    plt.savefig(os.path.join(output_folder,f"switching_time.png"), format='png')
     plt.close()

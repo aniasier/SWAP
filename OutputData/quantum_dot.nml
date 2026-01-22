@@ -1,13 +1,13 @@
 &calculation_parameters
-	Nx=16,
-	Ny=8,
+	Nx=40,
+	Ny=20,
 	dx=.39,
 	norbs=6,
-	nstate_1 = 10,
-	nstate_2 = 8,
-	k_electrons = 2,
-	dt = 1e-3,
-	t_max = 1/
+	nstate_1 = 12,
+	nstate_2 = 10,
+	k_electrons = 8,
+	dt = 1e-4,
+	t_max = 0.s1/
 
 &physical_parameters
 	th=0.04,

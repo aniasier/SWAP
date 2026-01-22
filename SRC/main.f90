@@ -203,7 +203,7 @@ PROGRAM MAIN
   Rx = dx * Nx/1.15
   Ry = dx * Ny/1.4
   Rb = Ry / 2.0
-  mu = 10.0
+  mu = 6.0
   potential = 0.0d0
   DO ix = -Nx, Nx
     DO iy = -Ny, Ny
@@ -214,7 +214,6 @@ PROGRAM MAIN
     END DO
   END DO
   CALL WRITE_POTENTIAL(potential, Nx, Ny, './OutputData/potential.dat')
-
   LOG_INFO(log_string)
   if(.not.(nstate_2 < (4 * (nstate_2 + 1)).and.nstate_2 < ham_2_size.and.(4 * (nstate_2 + 1)) < ham_2_size)) THEN
     WRITE(log_string,*) 'In ARPES NEV < NCV ≤ N, please lower nstate_2. STOP.'
