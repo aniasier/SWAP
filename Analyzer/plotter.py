@@ -14,6 +14,7 @@ import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from scipy.signal import find_peaks
 from matplotlib.lines import Line2D
+from matplotlib.colors import ListedColormap
 
 ## Font
 rcParams['font.family'] = 'serif'
@@ -65,6 +66,7 @@ rcParams['savefig.dpi'] = 300
 
 ## Colormaps
 cm_inferno = get_cmap("inferno")
+cm_plasma = get_cmap("plasma")
 cm_viridis = get_cmap("viridis")
 cm_seismic = get_cmap("seismic")
 cm_tab10 = get_cmap("tab10")
@@ -554,27 +556,61 @@ def PlotPotential(potential, name, output_folder="../Plots"):
 def PlotSpinTime(spin, name,x, y,z, output_folder="../Plots"):
     os.makedirs(output_folder, exist_ok=True)
 
+    # Determine number of lines to plot
+    num_lines = (x + y + z) * 2
+    
+    # Select visually appealing colors from inferno
+    if num_lines == 2:
+        color_indices = [0.2, 0.85]
+    elif num_lines == 4:
+        color_indices = [0.15, 0.4, 0.65, 0.9]
+    else:  # num_lines == 6
+        color_indices = [0.1, 0.3, 0.5, 0.7, 0.85, 0.95]
+    
+    colors = [cm_plasma(idx) for idx in color_indices]
+    color_idx = 0
+
     if (x ==1):
-        plt.plot(spin.iloc[:,0], spin.iloc[:,1], label='$S_x$ (L)')
-        plt.plot(spin.iloc[:,0], spin.iloc[:,2], label='$S_x$ (R)')
+        plt.plot(spin.iloc[:,0], spin.iloc[:,1], color=colors[color_idx])
+        color_idx += 1
+        plt.plot(spin.iloc[:,0], spin.iloc[:,2], color=colors[color_idx])
+        color_idx += 1
         spin_time = spin.iloc[:,2].values
     if(y ==1):
-        plt.plot(spin.iloc[:,0], spin.iloc[:,3], label='$S_y$ (L)')
-        plt.plot(spin.iloc[:,0], spin.iloc[:,4], label='$S_y$ (R)')
+        plt.plot(spin.iloc[:,0], spin.iloc[:,3], color=colors[color_idx])
+        color_idx += 1
+        plt.plot(spin.iloc[:,0], spin.iloc[:,4], color=colors[color_idx])
+        color_idx += 1
         spin_time = spin.iloc[:,4].values
     if(z == 1):
-        plt.plot(spin.iloc[:,0], spin.iloc[:,5], label='$S_z$ (L)')
-        plt.plot(spin.iloc[:,0], spin.iloc[:,6], label='$S_z$ (R)')
+        plt.plot(spin.iloc[:,0], spin.iloc[:,5], color=colors[color_idx])
+        color_idx += 1
+        plt.plot(spin.iloc[:,0], spin.iloc[:,6], color=colors[color_idx])
+        color_idx += 1
         spin_time = spin.iloc[:,6].values
+    
     xyz = x + y + z
     plt.ylim(-1,1)
-    plt.xlim(spin.iloc[0,0], spin.iloc[-1,0])
-    # plt.xlim(spin.iloc[0,0], 0.001)
+    # plt.xlim(spin.iloc[0,0], spin.iloc[-1,0])
+    plt.xlim(spin.iloc[0,0], 10)
     plt.xlabel('t [ns]')
-    plt.ylabel('$S$ [$\hbar$/2]')
-    plt.legend()
+    plt.ylabel('$S_z$ [$\hbar$/2]')
+    
+    # Add text labels instead of legend (can be positioned manually)
+    ax = plt.gca()
+    label_text = []
+
+    label_text.append(f'(L)')
+    label_text.append(f'(R)')
+    
+    # Position labels individually for easy customization
+    ax.text(0.02, 0.95, label_text[0], transform=ax.transAxes, 
+            fontsize=8, verticalalignment='top', color=colors[0])
+    ax.text(0.02, 0.87, label_text[1], transform=ax.transAxes, 
+            fontsize=8, verticalalignment='top', color=colors[1])
+    
     plt.tight_layout()
-    plt.savefig(os.path.join(output_folder,f"spin_swap_small_full_{name}.png"), format='png')
+    plt.savefig(os.path.join(output_folder,f"spin_swap_small_period_{name}.png"), format='png')
     plt.close()
 
     peaks, _ = find_peaks(spin_time,prominence=0.1)
@@ -603,16 +639,67 @@ def FindTime(spin, name,x, y,z,):
     # print(spin.iloc[:,0][first_peak])
     return spin.iloc[:,0][first_peak]
 
-def PlotSpinDensity(potential, name, output_folder="../Plots"):
+def PlotSpinDensity(spin_up, spin_down, name, output_folder="../Plots"):
     os.makedirs(output_folder, exist_ok=True)
-       
-    plt.scatter(potential["kx"], potential["ky"], c=potential["potential"], cmap="seismic", s=30)
-    plt.colorbar(label="Spin Density [$\hbar$/2]")
+
+    red_cmap = ListedColormap([cm_seismic(i) for i in np.linspace(0.5, 1.0, 256)])
+    blue_cmap = ListedColormap([cm_seismic(i) for i in np.linspace(0.5, 0.0, 256)])
+
+    fig, ax = plt.subplots()
+    
+    # Plot spin_down with blue spectrum (plotted first so it's behind)
+    scatter_down = ax.scatter(spin_down["kx"], spin_down["ky"], c=spin_down["potential"], 
+                             cmap=blue_cmap, s=30, alpha=0.6, label='Spin Down')
+    
+    # Plot spin_up with red spectrum (plotted after so it appears on top)
+    scatter_up = ax.scatter(spin_up["kx"], spin_up["ky"], c=spin_up["potential"], 
+                           cmap=red_cmap, s=30, alpha=0.6, label='Spin Up')
+    
+    # plt.colorbar(scatter_up, ax=ax, label="Spin Density [$\hbar$/2]")
     plt.axis('equal')
 
     plt.xlabel(r"$x$ [nm]")
     plt.ylabel(r"$y$ [nm]")
-    plt.savefig(os.path.join(output_folder,f"spin_density_tswitch_{name}.png"), format='png')
+    plt.legend()
+    plt.savefig(os.path.join(output_folder,f"spin_density_t-half_{name}.png"), format='png')
+    plt.close()
+
+def PlotSpinDensityUp(spin_up, name, output_folder="../Plots"):
+    os.makedirs(output_folder, exist_ok=True)
+
+    red_cmap = ListedColormap([cm_seismic(i) for i in np.linspace(0.5, 1.0, 256)])
+
+    fig, ax = plt.subplots()
+    
+    # Plot spin_up with red spectrum
+    scatter_up = ax.scatter(spin_up["kx"], spin_up["ky"], c=spin_up["potential"], 
+                           cmap=red_cmap, s=30)
+    
+    plt.colorbar(scatter_up, ax=ax, label="Spin Density [$\hbar$/2]")
+    plt.axis('equal')
+
+    plt.xlabel(r"$x$ [nm]")
+    plt.ylabel(r"$y$ [nm]")
+    plt.savefig(os.path.join(output_folder,f"spin_density_up_switch_{name}.png"), format='png')
+    plt.close()
+
+def PlotSpinDensityDown(spin_down, name, output_folder="../Plots"):
+    os.makedirs(output_folder, exist_ok=True)
+
+    blue_cmap = ListedColormap([cm_seismic(i) for i in np.linspace(0.5, 0.0, 256)])
+
+    fig, ax = plt.subplots()
+    
+    # Plot spin_down with blue spectrum
+    scatter_down = ax.scatter(spin_down["kx"], spin_down["ky"], c=spin_down["potential"], 
+                             cmap=blue_cmap, s=30)
+    
+    plt.colorbar(scatter_down, ax=ax, label="Spin Density [$\hbar$/2]")
+    plt.axis('equal')
+
+    plt.xlabel(r"$x$ [nm]")
+    plt.ylabel(r"$y$ [nm]")
+    plt.savefig(os.path.join(output_folder,f"spin_density_down_switch_{name}.png"), format='png')
     plt.close()
 
 def PlotSwitchingTime(time, v0, output_folder="../Plots"):

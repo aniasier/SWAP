@@ -4,7 +4,7 @@ from plotter import *
 
 def main():
     name = "RUN_Bz_0.01"
-    dir = f"/home/alina/Documents/SWAP-results/220126/small/period/{name}/"
+    dir = f"/home/alina/Documents/SWAP-results/280126/large/noSO/{name}/"
     # dir = f"/home/alina/Documents/SWAP/"
     x = 0 # 0 -> x, 1 -> y, 2 -> z
     y = 0
@@ -53,8 +53,11 @@ def main():
 
     potential = LoadPotential(dir)
     PlotPotential(potential, name, output_folder=f"{dir}/Plots")
-    # spin_density = LoadSpinDensity(dir)
-    # PlotSpinDensity(spin_density, name, output_folder=f"{dir}/Plots")
+    # spin_density_up = LoadSpinDensity(dir, "spin_density_up-tswitch")
+    # spin_density_down = LoadSpinDensity(dir, "spin_density_down-tswitch")
+    # PlotSpinDensity(spin_density_up, spin_density_down, name, output_folder=f"{dir}/Plots")
+    # PlotSpinDensityUp(spin_density_up, name, output_folder=f"{dir}/Plots")
+    # PlotSpinDensityDown(spin_density_down, name, output_folder=f"{dir}/Plots")
     spin = LoadSpinTime(name,dir)  
     PlotSpinTime(spin, name, x, y,z, output_folder=f"{dir}/Plots")
     

@@ -167,9 +167,9 @@ def LoadPotential(dir):
     return psi1
 
 
-def LoadSpinDensity(dir):
+def LoadSpinDensity(dir, filename):
     psiPath = os.path.join(
-        dir + "OutputData", f"spin_densitytswitch.dat"
+        dir + "OutputData", f"{filename}.dat"
     )
     if os.path.exists(psiPath):
         psi1 = pd.read_fwf(
@@ -194,7 +194,7 @@ def LoadSpinTime(filename,dir):
         psi1 = pd.read_fwf(
             psiPath,
             skiprows=1,
-            infer_nrows=10000,
+            infer_nrows=100000,
             names=[
                 "t",
                 "sx_L",
