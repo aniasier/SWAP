@@ -74,7 +74,7 @@ cm_tab10 = get_cmap("tab10")
 ### Palettes from color-hex.com/ 
 c_google = ['#008744', '#0057e7', '#d62d20', '#ffa700'] # G, B, R, Y # https://www.color-hex.com/color-palette/1872 
 c_twilight = ['#363b74', '#673888', '#ef4f91', '#c79dd7', '#4d1b7b'] # https://www.color-hex.com/color-palette/809
-
+c_palette = ["#780000","#c1121f","#fdf0d5","#003049","#669bbc"]
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -571,30 +571,30 @@ def PlotSpinTime(spin, name,x, y,z, output_folder="../Plots"):
     color_idx = 0
 
     if (x ==1):
-        plt.plot(spin.iloc[:,0], spin.iloc[:,1], color=colors[color_idx])
+        plt.plot(spin.iloc[:,0], spin.iloc[:,1], color=c_palette[1])
         color_idx += 1
-        plt.plot(spin.iloc[:,0], spin.iloc[:,2], color=colors[color_idx])
+        plt.plot(spin.iloc[:,0], spin.iloc[:,2], color=c_palette[4])
         color_idx += 1
         spin_time = spin.iloc[:,2].values
     if(y ==1):
-        plt.plot(spin.iloc[:,0], spin.iloc[:,3], color=colors[color_idx])
+        plt.plot(spin.iloc[:,0], spin.iloc[:,3], color=c_palette[1])
         color_idx += 1
-        plt.plot(spin.iloc[:,0], spin.iloc[:,4], color=colors[color_idx])
+        plt.plot(spin.iloc[:,0], spin.iloc[:,4], color=c_palette[4])
         color_idx += 1
         spin_time = spin.iloc[:,4].values
     if(z == 1):
-        plt.plot(spin.iloc[:,0], spin.iloc[:,5], color=colors[color_idx])
+        plt.plot(spin.iloc[:,0], spin.iloc[:,5], color=c_palette[1])
         color_idx += 1
-        plt.plot(spin.iloc[:,0], spin.iloc[:,6], color=colors[color_idx])
+        plt.plot(spin.iloc[:,0], spin.iloc[:,6], color=c_palette[4])
         color_idx += 1
         spin_time = spin.iloc[:,6].values
     
     xyz = x + y + z
     plt.ylim(-1,1)
-    # plt.xlim(spin.iloc[0,0], spin.iloc[-1,0])
-    plt.xlim(spin.iloc[0,0], 10)
+    plt.xlim(spin.iloc[0,0], spin.iloc[-1,0])
+    # plt.xlim(spin.iloc[0,0], 0.2)
     plt.xlabel('t [ns]')
-    plt.ylabel('$S_z$ [$\hbar$/2]')
+    plt.ylabel('$S_z$ [$\hbar$/20]')
     
     # Add text labels instead of legend (can be positioned manually)
     ax = plt.gca()
@@ -605,9 +605,9 @@ def PlotSpinTime(spin, name,x, y,z, output_folder="../Plots"):
     
     # Position labels individually for easy customization
     ax.text(0.02, 0.95, label_text[0], transform=ax.transAxes, 
-            fontsize=8, verticalalignment='top', color=colors[0])
-    ax.text(0.02, 0.87, label_text[1], transform=ax.transAxes, 
-            fontsize=8, verticalalignment='top', color=colors[1])
+            fontsize=8, verticalalignment='top', color=c_palette[1])
+    ax.text(0.02, 0.1, label_text[1], transform=ax.transAxes, 
+            fontsize=8, verticalalignment='top', color=c_palette[4])
     
     plt.tight_layout()
     plt.savefig(os.path.join(output_folder,f"spin_swap_small_period_{name}.png"), format='png')

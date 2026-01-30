@@ -4,7 +4,8 @@ from plotter import *
 
 def main():
     name = "RUN_Bz_0.01"
-    dir = f"/home/alina/Documents/SWAP-results/280126/large/noSO/{name}/"
+    # dir = f"/home/alina/Documents/SWAP-results/280126/large/noSO/{name}/"
+    dir = f"/home/ania/Documents/Doktorat/SWAP-results/290126/results/large/SO/{name}/"
     # dir = f"/home/alina/Documents/SWAP/"
     x = 0 # 0 -> x, 1 -> y, 2 -> z
     y = 0
